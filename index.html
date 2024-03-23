@@ -12,7 +12,6 @@
       html {
         margin: 0;
         padding: 0;
-        height: 100vh;
       }
       canvas {
         border: 2px solid black;
@@ -51,7 +50,7 @@
   <body>
     <div
       style="
-        margin: 0 auto;
+        margin: 0 15px;
         height: 100%;
         display: flex;
         flex-direction: column;
@@ -76,64 +75,79 @@
     <script>
       var canvas = document.getElementById("myCanvas");
       var ctx = canvas.getContext("2d");
+      function updatePositions() {
+        circles.forEach(function (circle, index) {
+          circle.x = canvas.width * 0.1;
+          circle.y = canvas.height * (0.2 + index * 0.2);
+          if (arrows[index].moving) {
+            arrows[index].x = circle.x + 2 * circleRadius + 10;
+            arrows[index].y = circle.y;
+          } else {
+            arrows[index].x = canvas.width * 0.9;
+            arrows[index].y = canvas.height * (0.2 + index * 0.2);
+          }
+        });
+      }
+
       var circles = [
         {
-          x: 100,
-          y: 100,
+          x: canvas.width * 0.1,
+          y: canvas.height * 0.2,
           color: "#ff0000",
           defaultColor: "#ff0000",
           hit: false,
         },
         {
-          x: 100,
-          y: 200,
+          x: canvas.width * 0.1,
+          y: canvas.height * 0.4,
           color: "#00ff00",
           defaultColor: "#00ff00",
           hit: false,
         },
         {
-          x: 100,
-          y: 300,
+          x: canvas.width * 0.1,
+          y: canvas.height * 0.6,
           color: "#0000ff",
           defaultColor: "#0000ff",
           hit: false,
         },
         {
-          x: 100,
-          y: 400,
+          x: canvas.width * 0.1,
+          y: canvas.height * 0.8,
           color: "#ffff00",
           defaultColor: "#ffff00",
           hit: false,
         },
       ];
+
       var arrows = [
         {
-          x: 700,
-          y: 100,
+          x: canvas.width * 0.9,
+          y: canvas.height * 0.2,
           length: 30,
           speed: 2,
           color: "#000000",
           moving: false,
         },
         {
-          x: 700,
-          y: 200,
+          x: canvas.width * 0.9,
+          y: canvas.height * 0.4,
           length: 30,
           speed: 2,
           color: "#000000",
           moving: false,
         },
         {
-          x: 700,
-          y: 300,
+          x: canvas.width * 0.9,
+          y: canvas.height * 0.6,
           length: 30,
           speed: 2,
           color: "#000000",
           moving: false,
         },
         {
-          x: 700,
-          y: 400,
+          x: canvas.width * 0.9,
+          y: canvas.height * 0.8,
           length: 30,
           speed: 2,
           color: "#000000",
@@ -141,7 +155,6 @@
         },
       ];
       var circleRadius = 30;
-      var arrowOffset = 650;
 
       function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -179,10 +192,11 @@
       function reset() {
         circles.forEach(function (circle, index) {
           circle.hit = false;
-          circle.y = 100 * (index + 1);
+          circle.x = canvas.width * 0.1;
+          circle.y = canvas.height * (0.2 + index * 0.2);
           circle.color = circle.defaultColor;
-          arrows[index].x = 700;
-          arrows[index].y = 100 * (index + 1);
+          arrows[index].x = canvas.width * 0.9;
+          arrows[index].y = canvas.height * (0.2 + index * 0.2);
           arrows[index].moving = false;
         });
         draw();
@@ -190,10 +204,10 @@
 
       function checkHit(x, y) {
         circles.forEach(function (circle, index) {
-          if (
-            !circle.hit &&
-            Math.sqrt((x - circle.x) ** 2 + (y - circle.y) ** 2) <= circleRadius
-          ) {
+          var distance = Math.sqrt(
+            Math.pow(x - circle.x, 2) + Math.pow(y - circle.y, 2)
+          );
+          if (!circle.hit && distance <= circleRadius) {
             circle.hit = true;
             circle.color = getRandomColor();
             moveArrow(index);
@@ -232,15 +246,23 @@
         }
       }
 
+      window.addEventListener("resize", function () {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight * 0.8;
+        updatePositions();
+        draw();
+      });
+
       canvas.addEventListener("click", function (event) {
         var rect = canvas.getBoundingClientRect();
         var x = event.clientX - rect.left;
         var y = event.clientY - rect.top;
+        console.log(event.clientX, event.clientY, rect.left, rect.top, x, y);
         checkHit(x, y);
       });
 
       document.getElementById("resetButton").addEventListener("click", reset);
-
+      window.dispatchEvent(new Event("resize"));
       draw();
     </script>
   </body>
